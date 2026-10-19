@@ -51,9 +51,12 @@ Errors: non-2xx with `ErrorResponse` (`{"detail": "..."}`, the FastAPI default).
 - `macros_per_portion = total_macros / portions`; `total_macros` is the sum of ingredient
   macros. Not enforced by the schema.
 - Cooking state: `raw`, `cooked` (type unknown), a cooking type, or `unknown`.
-- Recipe generation ("frigo vide"): the recipe may only use the ingredients of `analysis`
-  (plus basics the Rag_llm owner defines, e.g. salt, water, oil). Stated here, enforced in Rag_llm's
-  prompt.
+- Recipe generation ("frigo vide"): the recipe may only use the ingredients of `analysis`,
+  plus a fixed list of pantry basics (salt, pepper, water, oil). Stated here, enforced in
+  Rag_llm's prompt.
+- Language (agreed with Rag_llm): all generated text (recipe, answers) is **French**.
+  Ingredient names exchanged between modules are therefore **French** too (this also
+  matches Ciqual). Field names stay English snake_case.
 - Conversation history: **stateless server**. The app keeps the chat persistent and sends
   the full prior turns (oldest first, excluding the new `question`) on every `/chat` call.
 - Sources: **every chat answer must be sourced** (`ChatResponse.sources` has at least one
@@ -78,7 +81,7 @@ vision_engine (vision):
 4. Which Ollama VLM and model name.
 
 Rag_llm (RAG):
-5. Language of generated text (the RAG store is French; the app is currently English).
-6. Shared Ollama instance and model names (`rag_llm` defaults to `http://ollama:11434`),
-   ports (API uses 8080), and whether it runs in the same docker-compose.
-7. Pantry basics allowed in "frigo vide" mode.
+5. Chat/generation LLM name (Ollama), API port (currently 8080), and whether it runs in the
+   same docker-compose as the app. Already answered: embedding model is
+   `paraphrase-multilingual-MiniLM-L12-v2` (note: `rag_llm/app/config.py` still says
+   `all-minilm`, and scraped vectors and query vectors must use the same model).
