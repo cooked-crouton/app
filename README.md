@@ -6,7 +6,7 @@ Local Streamlit app (Ollama-powered). 100% local.
 
 ```
 python -m venv .venv && .venv\Scripts\activate
-pip install -r requirements.txt
+pip install -r requirements.txt   # add requirements-dev.txt for tests (then: pytest)
 copy .env.example .env
 streamlit run app.py
 ```

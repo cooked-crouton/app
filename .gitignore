@@ -28,6 +28,7 @@ env/
 .streamlit/cache/
 tmp/
 uploads/
+data/
 codecarbon_output/
 emissions.csv
 .codecarbon.config

@@ -6,6 +6,7 @@ from config import Settings
 
 
 def render_sidebar(settings: Settings) -> None:
+    """Render the sidebar with the app title and active configuration."""
     with st.sidebar:
         st.title("🥖 Cooked Crouton")
         st.caption("Local, private recipe assistant")
