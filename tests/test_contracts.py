@@ -2,6 +2,9 @@ import pytest
 from pydantic import ValidationError
 
 from contracts import (
+    AnalyzeIngredientsRequest,
+    ChatResponse,
+    IngredientInput,
     ChatRequest,
     CookingState,
     DetectedIngredient,
@@ -62,3 +65,24 @@ def test_size_limits_reject_oversized_input():
         ChatRequest(question="x" * 2001)
     with pytest.raises(ValidationError):
         ChatRequest(question="hi", history=[{"role": "user", "content": "x"}] * 51)
+
+
+def test_calories_are_optional():
+    m = Macros(protein_g=1, carbs_g=2, fat_g=3)
+    assert m.calories_kcal is None
+
+
+def test_ingredient_only_request():
+    req = AnalyzeIngredientsRequest(ingredients=[IngredientInput(name="egg")])
+    assert req.ingredients[0].grams is None and req.portions == 1
+    with pytest.raises(ValidationError):
+        AnalyzeIngredientsRequest(ingredients=[])
+    with pytest.raises(ValidationError):
+        IngredientInput(name="egg", grams=0)
+
+
+def test_chat_answers_must_be_sourced():
+    with pytest.raises(ValidationError):
+        ChatResponse(answer="Use applesauce.", sources=[])
+    ok = ChatResponse(answer="Use applesauce.", sources=[{"title": "Vegan baking"}])
+    assert ok.sources[0].url is None

@@ -78,7 +78,7 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     answer: str
-    sources: list[Source] = Field(default_factory=list)
+    sources: list[Source] = Field(min_length=1, description="Answers must be sourced.")
 
 
 class ErrorResponse(BaseModel):

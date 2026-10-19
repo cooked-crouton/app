@@ -13,21 +13,24 @@ from contracts.recipe import (
     Source,
 )
 from contracts.vision import (
-    AnalyzeImageRequest,
+    AnalyzeIngredientsRequest,
     CookingState,
     DetectedIngredient,
+    IngredientInput,
     Macros,
     NutritionAnalysis,
+    VisionEngine,
 )
 
 __all__ = [
-    "AnalyzeImageRequest",
+    "AnalyzeIngredientsRequest",
     "ChatMessage",
     "ChatRequest",
     "ChatResponse",
     "CookingState",
     "DetectedIngredient",
     "ErrorResponse",
+    "IngredientInput",
     "Macros",
     "NutritionAnalysis",
     "Recipe",
@@ -36,4 +39,5 @@ __all__ = [
     "RecipeResponse",
     "Role",
     "Source",
+    "VisionEngine",
 ]
