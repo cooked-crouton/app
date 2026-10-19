@@ -41,7 +41,7 @@ class DetectedIngredient(BaseModel):
 class NutritionAnalysis(BaseModel):
     """Response of the vision/nutrition module."""
 
-    ingredients: list[DetectedIngredient]
+    ingredients: list[DetectedIngredient] = Field(max_length=100)
     total_macros: Macros = Field(description="Sum over all ingredients.")
     portions: int = Field(default=1, ge=1, description="Number of portions assumed.")
     macros_per_portion: Macros = Field(description="`total_macros` / `portions`.")

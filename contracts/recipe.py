@@ -19,7 +19,7 @@ class Role(str, Enum):
 
 class ChatMessage(BaseModel):
     role: Role
-    content: str = Field(min_length=1)
+    content: str = Field(min_length=1, max_length=4000)
 
 
 class Source(BaseModel):
@@ -50,7 +50,9 @@ class RecipeRequest(BaseModel):
 
     analysis: NutritionAnalysis
     constraints: list[str] = Field(
-        default_factory=list, description="Free-form, e.g. vegetarian, no gluten."
+        default_factory=list,
+        max_length=20,
+        description="Free-form, e.g. vegetarian, no gluten.",
     )
     servings: int = Field(default=1, ge=1)
     max_cook_time_minutes: int | None = Field(default=None, gt=0)
@@ -64,9 +66,11 @@ class RecipeResponse(BaseModel):
 class ChatRequest(BaseModel):
     """Ask a question about the current recipe."""
 
-    question: str = Field(min_length=1)
+    question: str = Field(min_length=1, max_length=2000)
     history: list[ChatMessage] = Field(
-        default_factory=list, description="Previous turns, oldest first, excluding `question`."
+        default_factory=list,
+        max_length=50,
+        description="Previous turns, oldest first, excluding `question`.",
     )
     recipe: Recipe | None = None
     analysis: NutritionAnalysis | None = None

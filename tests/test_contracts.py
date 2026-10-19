@@ -55,3 +55,10 @@ def test_chat_request_defaults_and_validation():
 def test_recipe_request_embeds_analysis():
     req = RecipeRequest(analysis=_analysis(), constraints=["vegetarian"])
     assert req.servings == 1 and req.analysis.portions == 2
+
+
+def test_size_limits_reject_oversized_input():
+    with pytest.raises(ValidationError):
+        ChatRequest(question="x" * 2001)
+    with pytest.raises(ValidationError):
+        ChatRequest(question="hi", history=[{"role": "user", "content": "x"}] * 51)

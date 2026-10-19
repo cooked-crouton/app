@@ -33,6 +33,7 @@ Errors: non-2xx with `ErrorResponse` (`{"detail": "..."}`, the FastAPI default).
   first, excluding the new `question`) on every `/chat` call.
 - Sources: `title` required; `url`, `snippet`, `score` optional. `title` and `url` match the
   metadata the RAG store already keeps per recipe.
+- Free-text inputs are length-capped (question 2000 chars, 50 history turns, 20 constraints).
 - Image upload safety (vision side): accept only JPEG/PNG, cap the size, never trust filenames.
 
 ## Open questions
