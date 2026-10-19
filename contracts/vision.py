@@ -1,6 +1,6 @@
-"""Contract: vision/nutrition module (D2) <-> app (PROPOSAL, to be agreed with the owner).
+"""Contract: vision/nutrition module (vision_engine) <-> app (PROPOSAL, to be agreed with the owner).
 
-D2 is consumed as a Python module (see `VisionEngine`). It accepts either a photo or a
+vision_engine is consumed as a Python module (see `VisionEngine`). It accepts either a photo or a
 plain ingredient list and returns the ingredients with estimated weights, cooking state
 and macros. Nutrition reference data must be a local copy (e.g. Ciqual), never a
 network API.
@@ -69,7 +69,7 @@ class AnalyzeIngredientsRequest(BaseModel):
 
 
 class VisionEngine(Protocol):
-    """Interface the app expects from D2 (call from a worker thread: inference is slow)."""
+    """Interface the app expects from vision_engine (call from a worker thread: inference is slow)."""
 
     def analyze_image(self, image: bytes, portions: int = 1) -> NutritionAnalysis:
         """Analyze a photo (JPEG/PNG bytes) of ingredients or a dish."""
