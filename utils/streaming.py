@@ -8,5 +8,7 @@ def stream_text(text: str, delay: float = 0.03) -> Iterator[str]:
     """Yield `text` word by word, keeping whitespace, pausing `delay` s between words."""
     words = text.split(" ")
     for i, word in enumerate(words):
-        yield word if i == len(words) - 1 else word + " "
-        time.sleep(delay)
+        last = i == len(words) - 1
+        yield word if last else word + " "
+        if not last:
+            time.sleep(delay)
