@@ -51,3 +51,14 @@ def test_use_mocks_rejects_unknown_value(monkeypatch):
     monkeypatch.setenv("USE_MOCKS", "maybe")
     with pytest.raises(ValueError, match="USE_MOCKS"):
         config.load_settings()
+
+
+def test_vision_timeout_default_and_validation(monkeypatch):
+    monkeypatch.delenv("VISION_TIMEOUT_S", raising=False)
+    assert config.load_settings().vision_timeout_s == 120.0
+    monkeypatch.setenv("VISION_TIMEOUT_S", "30")
+    assert config.load_settings().vision_timeout_s == 30.0
+    for bad in ("abc", "0", "-5"):
+        monkeypatch.setenv("VISION_TIMEOUT_S", bad)
+        with pytest.raises(ValueError, match="VISION_TIMEOUT_S"):
+            config.load_settings()

@@ -20,6 +20,10 @@ from contracts.vision import (
     Macros,
     NutritionAnalysis,
     VisionEngine,
+    VisionError,
+    VisionModelNotFoundError,
+    VisionTimeoutError,
+    VisionUnavailableError,
 )
 
 __all__ = [
@@ -40,4 +44,8 @@ __all__ = [
     "Role",
     "Source",
     "VisionEngine",
+    "VisionError",
+    "VisionModelNotFoundError",
+    "VisionTimeoutError",
+    "VisionUnavailableError",
 ]
