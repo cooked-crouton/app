@@ -1,12 +1,12 @@
 """Shared Pydantic schemas describing how the app talks to the other modules."""
 
 from contracts.recipe import (
+    ChatData,
     ChatMessage,
     ChatRequest,
     ChatResponse,
     ErrorResponse,
     Recipe,
-    RecipeIngredient,
     RecipeRequest,
     RecipeResponse,
     Role,
@@ -24,6 +24,7 @@ from contracts.vision import (
 
 __all__ = [
     "AnalyzeIngredientsRequest",
+    "ChatData",
     "ChatMessage",
     "ChatRequest",
     "ChatResponse",
@@ -34,7 +35,6 @@ __all__ = [
     "Macros",
     "NutritionAnalysis",
     "Recipe",
-    "RecipeIngredient",
     "RecipeRequest",
     "RecipeResponse",
     "Role",

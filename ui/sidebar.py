@@ -15,3 +15,4 @@ def render_sidebar(settings: Settings) -> None:
         st.text(f"Ollama: {settings.ollama_url}")
         st.text(f"Vision model: {settings.vision_model}")
         st.text(f"Chat model: {settings.chat_model}")
+        st.text(f"Services: {'mock' if settings.use_mocks else 'real'}")

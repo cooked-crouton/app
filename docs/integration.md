@@ -39,10 +39,24 @@ d'ingrédients". Missing grams are estimated; given grams are kept as is.
 
 | Method + path | Request | Response |
 |---|---|---|
-| `POST /api/v1/recipes/generate` | `RecipeRequest` | `RecipeResponse` |
-| `POST /api/v1/chat` | `ChatRequest` | `ChatResponse` |
+| `POST /api/v1/generate` | `RecipeRequest` (`ingredients`, `dietary_constraints`) | `RecipeResponse` (`status`, `recipe`) |
+| `POST /api/v1/chat` | `ChatRequest` (`message`, `history`) | `ChatResponse` (`status`, `data`) |
 
-Errors: non-2xx with `ErrorResponse` (`{"detail": "..."}`, the FastAPI default).
+The schemas mirror the Rag_llm README (API at `http://localhost:8080`, Swagger on `/docs`).
+Both responses carry `emissions_kgco2eq` (CodeCarbon) that the app can display and sum.
+Errors: assumed non-2xx with `ErrorResponse` (`{"detail": "..."}`, the FastAPI default);
+**to verify** against the running API.
+
+### Consequences of the Rag_llm API (workarounds, no change requested yet)
+
+- `/generate` takes ingredient **names** only and returns `used_ingredients` without
+  quantities. Macros shown with a recipe come from the vision_engine analysis, filtered on
+  `used_ingredients`. Servings and max cook time are not supported.
+- `/chat` has no recipe context field. The app puts the displayed recipe in `history` as a
+  first message. If the small LLM copes badly with it, ask Rag_llm for a dedicated field.
+- `/chat` returns free text. "Adapt the recipe" (issue #13) is done by calling `/generate`
+  again with an extra dietary constraint.
+- Rag_llm does not stream. The app streams client-side with `utils.streaming.stream_text`.
 
 ## Conventions
 
@@ -51,18 +65,18 @@ Errors: non-2xx with `ErrorResponse` (`{"detail": "..."}`, the FastAPI default).
 - `macros_per_portion = total_macros / portions`; `total_macros` is the sum of ingredient
   macros. Not enforced by the schema.
 - Cooking state: `raw`, `cooked` (type unknown), a cooking type, or `unknown`.
-- Recipe generation ("frigo vide"): the recipe may only use the ingredients of `analysis`,
-  plus a fixed list of pantry basics (salt, pepper, water, oil). Stated here, enforced in
-  Rag_llm's prompt.
+- Recipe generation ("frigo vide"): the recipe may only use the given ingredients, plus a
+  fixed list of pantry basics (salt, pepper, water, oil). Enforced in Rag_llm's prompt.
+  Build the request from an analysis with `RecipeRequest.from_analysis`.
 - Language (agreed with Rag_llm): all generated text (recipe, answers) is **French**.
   Ingredient names exchanged between modules are therefore **French** too (this also
   matches Ciqual). Field names stay English snake_case.
 - Conversation history: **stateless server**. The app keeps the chat persistent and sends
-  the full prior turns (oldest first, excluding the new `question`) on every `/chat` call.
-- Sources: **every chat answer must be sourced** (`ChatResponse.sources` has at least one
-  entry). `title` required; `url`, `snippet`, `score` optional. `title` and `url` match
-  the metadata the RAG store already keeps per recipe. Generation may return no sources.
-- Free-text inputs are length-capped (question 2000 chars, 50 history turns, 20 constraints).
+  the full prior turns (oldest first, excluding the new `message`) on every `/chat` call.
+- Sources: **every chat answer must be sourced** (`ChatData.sources` has at least one
+  entry). `title` required, `url` optional, matching the metadata the RAG store keeps per
+  recipe. Generation returns no sources.
+- Free-text inputs are length-capped (message 2000 chars, 50 history turns, 20 dietary constraints).
 - Image upload safety (vision_engine/app): accept only JPEG/PNG, cap the size, never trust client
   filenames.
 - Privacy/local: nutrition reference data (e.g. Ciqual) is a local file. No call to
@@ -81,7 +95,17 @@ vision_engine (vision):
 4. Which Ollama VLM and model name.
 
 Rag_llm (RAG):
-5. Chat/generation LLM name (Ollama), API port (currently 8080), and whether it runs in the
-   same docker-compose as the app. Already answered: embedding model is
-   `paraphrase-multilingual-MiniLM-L12-v2` (note: `rag_llm/app/config.py` still says
-   `all-minilm`, and scraped vectors and query vectors must use the same model).
+5. Docker: should the app share Rag_llm's docker-compose (and its Ollama on port 11434)?
+   Known from its README: LLM `qwen2:1.5b` or `phi3`, API on port 8080. The embedding model
+   is `paraphrase-multilingual-MiniLM-L12-v2`, but `rag_llm/app/config.py` still says
+   `all-minilm`; scraped vectors and query vectors must use the same model.
+6. Error format of `/generate` and `/chat` (verify on the running API).
+7. Later, only if the workarounds above prove insufficient: recipe context field in
+   `/chat`, structured recipe in chat answers, quantities in `/generate`.
+
+## Mock services (`USE_MOCKS=true`, default)
+
+`services/` holds the interfaces the UI uses (`VisionService`, `RecipeService`,
+`ChatService`), the mocks (`mocks.py`) and `get_services(settings)` (`factory.py`), which
+returns the mocks when `USE_MOCKS=true`. The real clients will implement the same
+interfaces, so swapping needs no UI change.
