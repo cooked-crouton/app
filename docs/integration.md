@@ -77,8 +77,9 @@ Errors: assumed non-2xx with `ErrorResponse` (`{"detail": "..."}`, the FastAPI d
   entry). `title` required, `url` optional, matching the metadata the RAG store keeps per
   recipe. Generation returns no sources.
 - Free-text inputs are length-capped (message 2000 chars, 50 history turns, 20 dietary constraints).
-- Image upload safety (vision_engine/app): accept only JPEG/PNG, cap the size, never trust client
-  filenames.
+- Image upload safety: the app (`utils/images.py`) checks the file content (JPG/PNG/WebP,
+  10 MB, 40 MP), re-encodes it as JPEG (max side 1024 px, EXIF/GPS dropped) and keeps it in
+  memory only. vision_engine therefore always receives clean JPEG bytes.
 - Privacy/local: nutrition reference data (e.g. Ciqual) is a local file. No call to
   OpenFoodFacts or any other online API at runtime. Model weights are pre-downloaded
   (document in the README).
