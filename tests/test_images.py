@@ -79,3 +79,9 @@ def test_too_many_pixels_rejected(monkeypatch):
     monkeypatch.setattr(images, "MAX_PIXELS", 1000)
     with pytest.raises(ImageError, match="too large"):
         prepare_image(_encode("PNG", size=(100, 100)))
+
+
+def test_decompression_bomb_gives_a_size_message(monkeypatch):
+    monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 100)
+    with pytest.raises(ImageError, match="far too large"):
+        prepare_image(_encode("PNG", size=(100, 100)))

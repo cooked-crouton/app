@@ -61,7 +61,9 @@ def prepare_image(data: bytes) -> PreparedImage:
             image = _to_rgb(image)
     except ImageError:
         raise
-    except (UnidentifiedImageError, Image.DecompressionBombError, OSError, ValueError, SyntaxError):
+    except Image.DecompressionBombError:
+        raise ImageError("The image is far too large. Please upload a smaller photo.") from None
+    except (UnidentifiedImageError, OSError, ValueError, SyntaxError):
         raise ImageError(f"This file is not a valid image. {_FORMAT_HINT}") from None
 
     image.thumbnail((MAX_SIDE, MAX_SIDE), Image.Resampling.LANCZOS)
