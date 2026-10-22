@@ -6,6 +6,8 @@ from utils.images import ALLOWED_EXTENSIONS, ImageError, PreparedImage, prepare_
 
 IMAGE_KEY = "image"  # st.session_state key holding the current `PreparedImage`
 _NONCE_KEY = "upload_nonce"  # changing the uploader key is how a file_uploader is reset
+# Everything derived from the current image; dropped whenever the image changes.
+ANALYSIS_KEYS = ("analysis", "analysis_job", "analysis_notice", "analysis_fresh")
 
 
 # Streamlit has no size option for the drop zone, so it is enlarged with local CSS.
@@ -26,10 +28,19 @@ def get_current_image() -> PreparedImage | None:
     return st.session_state.get(IMAGE_KEY)
 
 
+def _drop_analysis() -> None:
+    """Forget any running job or result computed from the previous image."""
+    job = st.session_state.get("analysis_job")
+    if job is not None:
+        job.cancel()
+    for key in ANALYSIS_KEYS:
+        st.session_state.pop(key, None)
+
+
 def clear_image() -> None:
     """Forget the current image and any result computed from it."""
     st.session_state.pop(IMAGE_KEY, None)
-    st.session_state.pop("analysis", None)  # filled by the analysis step
+    _drop_analysis()
     st.session_state[_NONCE_KEY] = st.session_state.get(_NONCE_KEY, 0) + 1
 
 
@@ -51,7 +62,7 @@ def render_image_upload() -> PreparedImage | None:
         except ImageError as exc:
             st.error(str(exc))
             return None
-        st.session_state.pop("analysis", None)
+        _drop_analysis()
         st.session_state[IMAGE_KEY] = image
         st.rerun()
 

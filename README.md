@@ -21,6 +21,12 @@ chat services, so Ollama and the other modules are not needed. See `docs/integra
 JPG, PNG or WebP up to 10 MB. The image is validated by content, resized (max 1024 px),
 re-encoded as JPEG without metadata, and kept in memory only (nothing is written to disk).
 
+## Image analysis
+
+The "Analyze image" button runs the vision service in the background (cancellable,
+`VISION_TIMEOUT_S` timeout) and lists the detected ingredients with cooking state and
+estimated weight. Failures (Ollama down, model missing, timeout) show what to do next.
+
 ## Layout
 
 - `app.py` entry point; `config.py` settings from `.env`
