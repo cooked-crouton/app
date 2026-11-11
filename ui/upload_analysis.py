@@ -22,7 +22,7 @@ def render_upload_analysis() -> None:
         return
     job: AnalysisJob | None = st.session_state.get("analysis_job")
     if job is not None:
-        _render_running(job)
+        _render_running()
         return
     _render_controls(image)
     notice = st.session_state.get("analysis_notice")
@@ -48,8 +48,13 @@ def _render_controls(image: PreparedImage) -> None:
         st.rerun()
 
 
-def _render_running(job: AnalysisJob) -> None:
-    """Show progress while the job runs; on any other state, store the outcome and rerun."""
+@st.fragment(run_every=_POLL_SECONDS)
+def _render_running() -> None:
+    """Show progress while the job runs. Only this fragment reruns, so the other tabs stay
+    usable; once the job ends, store the outcome and rerun the whole app."""
+    job: AnalysisJob | None = st.session_state.get("analysis_job")
+    if job is None:
+        st.rerun()
     if "portions" in st.session_state:  # keep the widget value while it is not rendered
         st.session_state["portions"] = st.session_state["portions"]
     state = job.state
@@ -59,9 +64,8 @@ def _render_running(job: AnalysisJob) -> None:
         if st.button("Cancel analysis"):
             job.cancel()
             st.rerun()
-        time.sleep(_POLL_SECONDS)
-        st.rerun()
-    elif state == "done":
+        return
+    if state == "done":
         st.session_state["analysis"] = job.result
         st.session_state["analysis_fresh"] = True
     elif state == "failed":
