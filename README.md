@@ -26,7 +26,9 @@ re-encoded as JPEG without metadata, and kept in memory only (nothing is written
 The "Analyze image" button runs the vision service in the background (cancellable,
 `VISION_TIMEOUT_S` timeout) and lists the detected ingredients with cooking state and
 estimated weight. The list is an editable table (rename, change a weight, add or remove a
-row): the nutrition is recomputed after every edit. Failures (Ollama down, model missing, timeout) show what to do next.
+row): the nutrition is recomputed after every edit. A nutrition summary shows calories and macros per portion and for the whole dish (the
+portion selector only changes the division), with the contribution of each ingredient.
+Failures (Ollama down, model missing, timeout) show what to do next.
 
 ## Layout
 

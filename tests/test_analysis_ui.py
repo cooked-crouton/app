@@ -158,3 +158,21 @@ def test_editing_the_table_recomputes_the_nutrition(monkeypatch):
     assert analysis.ingredients[0].estimated_grams == 300
     assert analysis.ingredients[3].estimated_grams > 0
     assert analysis.total_macros.protein_g > old_protein
+
+
+def test_nutrition_summary_follows_the_portion_selector(monkeypatch):
+    _use_vision(monkeypatch, MockVisionService())
+    at = _settle(_click(_uploaded(), "Analyze image"))
+    total = at.session_state["analysis"].total_macros
+    values = {m.label: m.value for m in at.metric}
+    assert len(at.metric) == 8  # 4 per portion + 4 whole dish
+    assert values["Proteins"] == f"{total.protein_g:.1f} g"
+    before = [m.value for m in at.metric]
+    first = before[:4]
+    at.number_input(key="portions").set_value(2).run()
+    after = [m.value for m in at.metric]
+    assert after[4:] == before[4:]  # whole-dish totals do not change
+    half = after[:4]
+    assert half != first
+    assert half[1] == f"{total.protein_g / 2:.1f} g"
+    assert any("2 portions" in m.value for m in at.markdown)

@@ -7,11 +7,12 @@ import streamlit as st
 
 from components.image_upload import render_image_upload
 from config import settings
-from contracts import AnalyzeIngredientsRequest, CookingState, NutritionAnalysis
+from contracts import AnalyzeIngredientsRequest, CookingState, Macros, NutritionAnalysis
 from services.analysis import AnalysisJob, describe_error, timeout_message
 from services.factory import get_services
 from utils.images import PreparedImage
 from utils.ingredients import GRAMS, NAME, STATE, to_request, to_rows
+from utils.nutrition import ingredient_rows, per_portion
 
 _POLL_SECONDS = 0.3
 _REVEAL_SECONDS = 0.25  # pause between ingredients when a fresh result is revealed
@@ -34,6 +35,7 @@ def render_upload_analysis() -> None:
     analysis: NutritionAnalysis | None = st.session_state.get("analysis")
     if analysis is not None:
         _render_ingredients(analysis, animate=st.session_state.pop("analysis_fresh", False))
+        _render_nutrition(analysis)
 
 
 def _render_controls(image: PreparedImage) -> None:
@@ -105,7 +107,7 @@ def _render_ingredients(analysis: NutritionAnalysis, animate: bool) -> None:
     edited_rows = edited.to_dict("records")
     if edited_rows == rows:
         return
-    request = to_request(edited_rows, analysis.portions)
+    request = to_request(edited_rows, _portions(analysis))
     if request is None:
         st.warning("Keep at least one ingredient.")
         return
@@ -122,3 +124,29 @@ def _recompute(request: AnalyzeIngredientsRequest) -> None:
         st.error(describe_error(exc, settings))
         return
     st.rerun()
+
+
+def _portions(analysis: NutritionAnalysis) -> int:
+    """Number of portions chosen in the selector (the analysis' own value as fallback)."""
+    return int(st.session_state.get("portions", analysis.portions))
+
+
+def _metrics(macros: Macros) -> None:
+    kcal = macros.calories_kcal
+    cols = st.columns(4)
+    cols[0].metric("Calories", "-" if kcal is None else f"{kcal:.0f} kcal")
+    cols[1].metric("Proteins", f"{macros.protein_g:.1f} g")
+    cols[2].metric("Carbs", f"{macros.carbs_g:.1f} g")
+    cols[3].metric("Fats", f"{macros.fat_g:.1f} g")
+
+
+def _render_nutrition(analysis: NutritionAnalysis) -> None:
+    """Totals for the dish and per portion; the portion count only changes the division."""
+    portions = _portions(analysis)
+    st.subheader("Nutrition")
+    st.markdown(f"**Per portion** ({portions} portion{'s' if portions > 1 else ''})")
+    _metrics(per_portion(analysis.total_macros, portions))
+    st.markdown("**Whole dish**")
+    _metrics(analysis.total_macros)
+    with st.expander("Contribution of each ingredient"):
+        st.table(ingredient_rows(analysis))
