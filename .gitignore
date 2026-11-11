@@ -1,6 +1,5 @@
-# --- Claude Code ---
-.claude/
-CLAUDE.md
+# --- Claude Code (shared config is versioned; only local overrides are ignored) ---
+.claude/settings.local.json
 CLAUDE.local.md
 
 # --- Python ---
