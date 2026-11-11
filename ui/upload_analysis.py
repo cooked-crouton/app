@@ -2,14 +2,16 @@
 
 import time
 
+import pandas as pd
 import streamlit as st
 
 from components.image_upload import render_image_upload
 from config import settings
-from contracts import NutritionAnalysis
+from contracts import AnalyzeIngredientsRequest, CookingState, NutritionAnalysis
 from services.analysis import AnalysisJob, describe_error, timeout_message
 from services.factory import get_services
 from utils.images import PreparedImage
+from utils.ingredients import GRAMS, NAME, STATE, to_request, to_rows
 
 _POLL_SECONDS = 0.3
 _REVEAL_SECONDS = 0.25  # pause between ingredients when a fresh result is revealed
@@ -80,20 +82,43 @@ def _render_running() -> None:
 
 
 def _render_ingredients(analysis: NutritionAnalysis, animate: bool) -> None:
+    """Editable table: the validated list is `analysis`, recomputed after every edit."""
     st.subheader("Detected ingredients")
-    rows = [
-        {
-            "Ingredient": ing.name.capitalize(),
-            "Cooking state": ing.cooking_state.value.capitalize(),
-            "Estimated weight (g)": round(ing.estimated_grams),
-            "Confidence": f"{ing.confidence:.0%}" if ing.confidence is not None else "-",
-        }
-        for ing in analysis.ingredients
-    ]
-    if not animate:
-        st.table(rows)
+    rows = to_rows(analysis)
+    if animate:
+        table = st.empty()
+        for count in range(1, len(rows) + 1):
+            table.table(rows[:count])
+            time.sleep(_REVEAL_SECONDS)
+        table.empty()
+    st.caption("Correct the list if needed: rename, change a weight, add or remove a row.")
+    edited = st.data_editor(
+        pd.DataFrame(rows, columns=[NAME, STATE, GRAMS]),
+        num_rows="dynamic",
+        hide_index=True,
+        column_config={
+            NAME: st.column_config.TextColumn(required=True),
+            STATE: st.column_config.SelectboxColumn(options=[s.value for s in CookingState]),
+            GRAMS: st.column_config.NumberColumn(min_value=1, format="%.0f"),
+        },
+    )
+    edited_rows = edited.to_dict("records")
+    if edited_rows == rows:
         return
-    table = st.empty()
-    for count in range(1, len(rows) + 1):
-        table.table(rows[:count])
-        time.sleep(_REVEAL_SECONDS)
+    request = to_request(edited_rows, analysis.portions)
+    if request is None:
+        st.warning("Keep at least one ingredient.")
+        return
+    _recompute(request)
+
+
+def _recompute(request: AnalyzeIngredientsRequest) -> None:
+    """Replace the analysis by the one computed from the edited list."""
+    vision = get_services(settings).vision
+    try:
+        with st.spinner("Updating nutrition..."):
+            st.session_state["analysis"] = vision.analyze_ingredients(request)
+    except Exception as exc:  # noqa: BLE001 - shown to the user
+        st.error(describe_error(exc, settings))
+        return
+    st.rerun()

@@ -50,10 +50,10 @@ def test_analyze_shows_ingredients_with_state_and_grams(monkeypatch):
     _use_vision(monkeypatch, MockVisionService())
     at = _settle(_click(_uploaded(), "Analyze image"))
     assert not at.exception
-    rows = at.table[0].value
-    assert list(rows["Ingredient"]) == ["Poulet", "Riz", "Brocoli"]
-    assert list(rows["Cooking state"]) == ["Grilled", "Boiled", "Steamed"]
-    assert list(rows["Estimated weight (g)"]) == [150, 180, 100]
+    analysis = at.session_state["analysis"]
+    assert [i.name for i in analysis.ingredients] == ["poulet", "riz", "brocoli"]
+    assert [i.cooking_state.value for i in analysis.ingredients] == ["grilled", "boiled", "steamed"]
+    assert [i.estimated_grams for i in analysis.ingredients] == [150, 180, 100]
     assert at.session_state["analysis"].portions == 1
 
 
@@ -132,3 +132,29 @@ def test_removing_the_image_discards_the_analysis(monkeypatch):
     at = _settle(_click(_uploaded(), "Analyze image"))
     at = _click(at, "Remove / replace image")
     assert "analysis" not in at.session_state and "image" not in at.session_state
+
+
+def test_editing_the_table_recomputes_the_nutrition(monkeypatch):
+    _use_vision(monkeypatch, MockVisionService())
+    real_editor = panel.st.data_editor
+
+    edited = []
+
+    def edit(rows, **kwargs):
+        df = real_editor(rows, **kwargs)
+        if edited:  # a real editor only reports a user edit once
+            return df
+        edited.append(True)
+        df.loc[0, "Weight (g)"] = 300  # poulet 150 -> 300
+        df.loc[len(df)] = ["Pâtes", "boiled", None]  # added row, weight left to estimate
+        return df
+
+    at = _settle(_click(_uploaded(), "Analyze image"))
+    old_protein = at.session_state["analysis"].total_macros.protein_g
+    monkeypatch.setattr(panel.st, "data_editor", edit)
+    at = at.run()
+    analysis = at.session_state["analysis"]
+    assert [i.name for i in analysis.ingredients] == ["poulet", "riz", "brocoli", "pâtes"]
+    assert analysis.ingredients[0].estimated_grams == 300
+    assert analysis.ingredients[3].estimated_grams > 0
+    assert analysis.total_macros.protein_g > old_protein
