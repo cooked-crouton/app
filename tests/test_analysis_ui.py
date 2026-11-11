@@ -2,7 +2,6 @@ import io
 import threading
 import time
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 from PIL import Image
@@ -37,9 +36,19 @@ def _click(at: AppTest, label: str) -> AppTest:
     return next(b for b in at.button if b.label == label).click().run()
 
 
+def _settle(at: AppTest) -> AppTest:
+    """AppTest has no timer: wait for the job to end, then rerun like the fragment would."""
+    if "analysis_job" not in at.session_state:  # the first run already stored the outcome
+        return at
+    job = at.session_state["analysis_job"]
+    while job.state == "running":
+        time.sleep(0.01)
+    return at.run()
+
+
 def test_analyze_shows_ingredients_with_state_and_grams(monkeypatch):
     _use_vision(monkeypatch, MockVisionService())
-    at = _click(_uploaded(), "Analyze image")
+    at = _settle(_click(_uploaded(), "Analyze image"))
     assert not at.exception
     rows = at.table[0].value
     assert list(rows["Ingredient"]) == ["Poulet", "Riz", "Brocoli"]
@@ -52,7 +61,7 @@ def test_portions_are_passed_to_the_service(monkeypatch):
     _use_vision(monkeypatch, MockVisionService())
     at = _uploaded()
     at.number_input(key="portions").set_value(3).run()
-    at = _click(at, "Analyze image")
+    at = _settle(_click(at, "Analyze image"))
     assert at.session_state["analysis"].portions == 3
 
 
@@ -66,22 +75,11 @@ def test_portions_are_passed_to_the_service(monkeypatch):
 )
 def test_failures_show_actionable_messages(monkeypatch, error, expected):
     _use_vision(monkeypatch, MockVisionService(error=error))
-    at = _click(_uploaded(), "Analyze image")
+    at = _settle(_click(_uploaded(), "Analyze image"))
     assert not at.exception
     assert any(expected in e.value for e in at.error)
     assert "analysis" not in at.session_state
     assert any(b.label == "Analyze image" for b in at.button)  # can retry
-
-
-class _StopPolling(Exception):
-    """Raised by the fake sleep to stop the UI's polling loop while a job is running."""
-
-
-def _freeze_polling(monkeypatch) -> None:
-    def stop(_seconds):
-        raise _StopPolling
-
-    monkeypatch.setattr(panel, "time", SimpleNamespace(sleep=stop))
 
 
 def test_running_job_shows_progress_and_cancel_releases_the_ui(monkeypatch):
@@ -93,10 +91,10 @@ def test_running_job_shows_progress_and_cancel_releases_the_ui(monkeypatch):
             return super().analyze_image(image, portions)
 
     _use_vision(monkeypatch, Blocking())
-    _freeze_polling(monkeypatch)
     try:
         at = _click(_uploaded(), "Analyze image")
-        assert len(at.exception) == 1  # the fake sleep stopped the polling loop
+        assert not at.exception
+        assert len(at.tabs) == 3 and at.header  # other tabs still render while running
         assert [s.label for s in at.status][0].startswith("Analysing the image")
         assert any(b.label == "Cancel analysis" for b in at.button)
 
@@ -118,7 +116,6 @@ def test_late_result_after_cancel_is_ignored(monkeypatch):
             return super().analyze_image(image, portions)
 
     _use_vision(monkeypatch, Blocking())
-    _freeze_polling(monkeypatch)
     try:
         at = _click(_uploaded(), "Analyze image")
         at = _click(at, "Cancel analysis")
@@ -132,6 +129,6 @@ def test_late_result_after_cancel_is_ignored(monkeypatch):
 
 def test_removing_the_image_discards_the_analysis(monkeypatch):
     _use_vision(monkeypatch, MockVisionService())
-    at = _click(_uploaded(), "Analyze image")
+    at = _settle(_click(_uploaded(), "Analyze image"))
     at = _click(at, "Remove / replace image")
     assert "analysis" not in at.session_state and "image" not in at.session_state
