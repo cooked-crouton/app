@@ -32,6 +32,22 @@ generation + RAG Q&A (repo `rag_llm`), **D4** = this Streamlit app.
 | `analyze_image(image: bytes, portions=1)` | JPEG/PNG bytes | `NutritionAnalysis` |
 | `analyze_ingredients(request)` | `AnalyzeIngredientsRequest` (names, optional grams) | `NutritionAnalysis` |
 
+### Errors vision_engine must raise (`contracts/vision.py`)
+
+| Exception | Meaning | Message shown by the app |
+|---|---|---|
+| `VisionUnavailableError` | Ollama cannot be reached | start it with `ollama serve` |
+| `VisionModelNotFoundError` | VLM not installed | `ollama pull <model>` |
+| `VisionTimeoutError` | analysis too slow | try a smaller photo / retry |
+| `ValueError` | invalid input (e.g. empty image) | the message itself |
+
+Any other exception gives a generic "failed unexpectedly" message (details only in logs).
+The app also gives up after `VISION_TIMEOUT_S` (default 120 s) and lets the user cancel.
+Python cannot kill a running call, so cancel/timeout only make the app ignore the late
+result. `analyze_image` returns the whole result at once: the app reveals ingredients
+progressively on its own. Real partial results would need a streaming call from
+vision_engine (optional request, not needed for now).
+
 The text-only path exists because the assignment says vision_engine takes "une image ou une liste
 d'ingrédients". Missing grams are estimated; given grams are kept as is.
 

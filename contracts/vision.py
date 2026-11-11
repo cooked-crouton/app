@@ -78,3 +78,19 @@ class VisionEngine(Protocol):
     def analyze_ingredients(self, request: AnalyzeIngredientsRequest) -> NutritionAnalysis:
         """Compute grams (when missing) and macros for a given ingredient list."""
         ...
+
+
+class VisionError(Exception):
+    """Base class for failures vision_engine must report in a recognisable way."""
+
+
+class VisionUnavailableError(VisionError):
+    """The local model server (Ollama) cannot be reached."""
+
+
+class VisionModelNotFoundError(VisionError):
+    """The vision model is not installed in Ollama (`ollama pull <model>`)."""
+
+
+class VisionTimeoutError(VisionError):
+    """The analysis took too long."""

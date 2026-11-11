@@ -26,6 +26,17 @@ def _env_port(name: str, default: int) -> int:
     return port
 
 
+def _env_float(name: str, default: float) -> float:
+    value = _env(name, str(default))
+    try:
+        number = float(value)
+    except ValueError:
+        raise ValueError(f"{name} must be a number, got {value!r}") from None
+    if number <= 0:
+        raise ValueError(f"{name} must be positive, got {number}")
+    return number
+
+
 def _env_bool(name: str, default: bool) -> bool:
     value = _env(name, str(default)).lower()
     if value in ("1", "true", "yes", "on"):
@@ -50,6 +61,7 @@ class Settings:
     chat_model: str
     recipe_api_url: str
     use_mocks: bool
+    vision_timeout_s: float
     upload_dir: Path
     data_dir: Path
     assets_dir: Path
@@ -68,6 +80,7 @@ def load_settings() -> Settings:
         chat_model=_env("OLLAMA_CHAT_MODEL", "llama3.1"),
         recipe_api_url=_env("RECIPE_API_URL", ""),
         use_mocks=_env_bool("USE_MOCKS", True),
+        vision_timeout_s=_env_float("VISION_TIMEOUT_S", 120.0),
         upload_dir=_resolve_path(_env("UPLOAD_DIR", "uploads")),
         data_dir=_resolve_path(_env("DATA_DIR", "data")),
         assets_dir=BASE_DIR / "assets",

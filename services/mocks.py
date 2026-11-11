@@ -78,19 +78,25 @@ def _analysis(items: list[tuple[str, float, CookingState]], portions: int) -> Nu
 
 
 class MockVisionService:
-    """Stands in for vision_engine. `delay` simulates its (slow) inference."""
+    """Stands in for vision_engine. `delay` simulates its (slow) inference and `error`
+    makes every call fail, to exercise the UI error handling."""
 
-    def __init__(self, delay: float = 0.0) -> None:
+    def __init__(self, delay: float = 0.0, error: Exception | None = None) -> None:
         self._delay = delay
+        self._error = error
 
     def analyze_image(self, image: bytes, portions: int = 1) -> NutritionAnalysis:
         if not image:
-            raise ValueError("Image vide.")
+            raise ValueError("Empty image.")
         time.sleep(self._delay)
+        if self._error is not None:
+            raise self._error
         return _analysis(_PLATE, portions)
 
     def analyze_ingredients(self, request: AnalyzeIngredientsRequest) -> NutritionAnalysis:
         time.sleep(self._delay)
+        if self._error is not None:
+            raise self._error
         items = [(i.name, i.grams or 100.0, i.cooking_state) for i in request.ingredients]
         return _analysis(items, request.portions)
 
