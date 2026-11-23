@@ -1,6 +1,6 @@
 from contracts import Macros
 from services.mocks import MockVisionService
-from utils.nutrition import ingredient_rows, per_portion
+from utils.nutrition import ingredient_rows, macro_rows, per_portion
 
 
 def test_per_portion_divides_every_value():
@@ -17,3 +17,16 @@ def test_ingredient_rows_match_the_analysis():
     rows = ingredient_rows(analysis)
     assert [r["Ingredient"] for r in rows] == ["Poulet", "Riz", "Brocoli"]
     assert sum(r["Proteins (g)"] for r in rows) == round(analysis.total_macros.protein_g, 1)
+
+
+def test_macro_rows_list_the_three_macros_in_grams():
+    rows = macro_rows(Macros(protein_g=10, carbs_g=20, fat_g=5))
+    assert rows == [
+        {"Macro": "Proteins", "Grams": 10},
+        {"Macro": "Carbs", "Grams": 20},
+        {"Macro": "Fats", "Grams": 5},
+    ]
+
+
+def test_macro_rows_are_empty_when_every_macro_is_zero():
+    assert macro_rows(Macros(protein_g=0, carbs_g=0, fat_g=0)) == []
