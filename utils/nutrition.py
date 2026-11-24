@@ -1,6 +1,6 @@
 """Small helpers to present a `NutritionAnalysis`."""
 
-from contracts import Macros, NutritionAnalysis
+from contracts import Macros, NutritionAnalysis, Recipe
 
 
 def per_portion(total: Macros, portions: int) -> Macros:
@@ -37,3 +37,13 @@ def ingredient_rows(analysis: NutritionAnalysis) -> list[dict]:
         }
         for i in analysis.ingredients
     ]
+
+
+def recipe_ingredient_lines(recipe: Recipe, analysis: NutritionAnalysis) -> list[str]:
+    """`used_ingredients` with the weight from the analysis when known (Rag_llm gives names only)."""
+    grams = {i.name.lower(): i.estimated_grams for i in analysis.ingredients}
+    lines = []
+    for name in recipe.used_ingredients:
+        weight = grams.get(name.lower())
+        lines.append(name.capitalize() if weight is None else f"{name.capitalize()} : {weight:.0f} g")
+    return lines

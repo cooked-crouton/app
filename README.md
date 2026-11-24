@@ -36,6 +36,11 @@ The "Recipe & Dashboard" tab shows the macros of the current analysis, per porti
 the whole dish: metric cards, a donut of proteins / carbs / fats (grams) and a bar chart of
 each ingredient's contribution. It follows every edit of the ingredient list.
 
+Above the charts, "Generate recipe" asks the recipe service for a recipe built from the
+detected ingredients and shows its title, ingredients (with the weights from the analysis)
+and numbered steps, revealed progressively. "Regenerate recipe" asks again. The recipe is
+kept in the session and dropped when the image changes.
+
 ## Layout
 
 - `app.py` entry point; `config.py` settings from `.env`

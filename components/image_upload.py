@@ -7,7 +7,7 @@ from utils.images import ALLOWED_EXTENSIONS, ImageError, PreparedImage, prepare_
 IMAGE_KEY = "image"  # st.session_state key holding the current `PreparedImage`
 _NONCE_KEY = "upload_nonce"  # changing the uploader key is how a file_uploader is reset
 # Everything derived from the current image; dropped whenever the image changes.
-ANALYSIS_KEYS = ("analysis", "analysis_job", "analysis_notice", "analysis_fresh")
+ANALYSIS_KEYS = ("analysis", "analysis_job", "analysis_notice", "analysis_fresh", "recipe", "recipe_fresh")
 
 
 # Streamlit has no size option for the drop zone, so it is enlarged with local CSS.
