@@ -1,16 +1,18 @@
 """Area 2: Recipe & Dashboard."""
 
-import pandas as pd
 import streamlit as st
 
-from components.macros import render_macros_pie, render_metrics, selected_portions
+from components.macros import (
+    render_ingredient_bars,
+    render_macros_pie,
+    render_metrics,
+    selected_portions,
+)
 from config import settings
 from contracts import NutritionAnalysis, Recipe, RecipeRequest
 from services.factory import get_services
-from utils.nutrition import ingredient_rows, per_portion, recipe_ingredient_lines
+from utils.nutrition import per_portion, recipe_ingredient_lines
 from utils.streaming import stream_text
-
-_MACRO_COLUMNS = ["Proteins (g)", "Carbs (g)", "Fats (g)"]
 
 
 def render_recipe_dashboard() -> None:
@@ -35,8 +37,7 @@ def render_recipe_dashboard() -> None:
     render_metrics(macros)
     render_macros_pie(macros)
     st.subheader("Contribution of each ingredient (whole dish)")
-    rows = pd.DataFrame(ingredient_rows(analysis))
-    st.bar_chart(rows, x="Ingredient", y=_MACRO_COLUMNS, y_label="Grams")
+    render_ingredient_bars(analysis)
 
 
 def _render_recipe(analysis: NutritionAnalysis) -> None:

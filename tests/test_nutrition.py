@@ -1,6 +1,6 @@
 from contracts import Macros, Recipe
 from services.mocks import MockVisionService
-from utils.nutrition import ingredient_rows, macro_rows, per_portion, recipe_ingredient_lines
+from utils.nutrition import ingredient_macro_rows, ingredient_rows, macro_rows, per_portion, recipe_ingredient_lines
 
 
 def test_per_portion_divides_every_value():
@@ -36,3 +36,14 @@ def test_recipe_ingredient_lines_add_grams_from_the_analysis():
     analysis = MockVisionService().analyze_image(b"x")
     recipe = Recipe(title="t", used_ingredients=["poulet", "Riz", "sel"], steps=["s"])
     assert recipe_ingredient_lines(recipe, analysis) == ["Poulet : 150 g", "Riz : 180 g", "Sel"]
+
+
+def test_ingredient_macro_rows_have_one_row_per_ingredient_and_macro():
+    analysis = MockVisionService().analyze_image(b"x")
+    rows = ingredient_macro_rows(analysis)
+    assert len(rows) == 3 * len(analysis.ingredients)
+    assert rows[:3] == [
+        {"Ingredient": "Poulet", "Macro": "Proteins", "Grams": 40.5},
+        {"Ingredient": "Poulet", "Macro": "Carbs", "Grams": 0.0},
+        {"Ingredient": "Poulet", "Macro": "Fats", "Grams": 10.5},
+    ]
