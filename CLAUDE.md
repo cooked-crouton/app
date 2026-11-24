@@ -39,7 +39,7 @@ pytest                      # all tests (pytest.ini: pythonpath=., testpaths=tes
 - Rag_llm is stateless and does not stream: the app keeps chat history and sends the full prior turns on each call; progressive display uses `utils.streaming.stream_text`.
 
 ## Conventions
-- Code, identifiers, comments, docstrings, commits: **English**. Text produced by the models (recipes, answers) and ingredient names exchanged between modules: **French**. Field names: English snake_case.
+- Code, identifiers, comments, docstrings, commits: **English**. UI text, text produced by the models (recipes, answers) and ingredient names exchanged between modules: **English** too (no mixed-language page). Field names: English snake_case.
 - Units: grams; energy in kcal. `macros_per_portion = total_macros / portions`.
 - Every chat answer must carry at least one `Source`. Never present an unsourced answer as RAG output.
 - Uploaded images go through `utils/images.py` (content check, 10 MB, 40 MP, JPEG re-encode, EXIF stripped) and stay **in memory only**. Keep `.streamlit/config.toml` `maxUploadSize` in sync with `MAX_UPLOAD_BYTES`.

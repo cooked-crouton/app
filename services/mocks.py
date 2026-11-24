@@ -1,4 +1,4 @@
-"""Fake services returning realistic French data, so the UI can be built before the real
+"""Fake services returning realistic data, so the UI can be built before the real
 modules exist. Outputs are validated by the same Pydantic contracts as the real ones."""
 
 import time
@@ -19,21 +19,21 @@ from contracts import (
 
 # (protein_g, carbs_g, fat_g, kcal) per 100 g, approximate values for cooked/raw food.
 _PER_100G: dict[str, tuple[float, float, float, float]] = {
-    "poulet": (27.0, 0.0, 7.0, 165.0),
-    "riz": (2.7, 28.0, 0.3, 130.0),
-    "brocoli": (2.8, 7.0, 0.4, 35.0),
-    "pâtes": (5.0, 25.0, 1.1, 131.0),
-    "œufs": (13.0, 1.1, 11.0, 155.0),
-    "tomates": (0.9, 3.9, 0.2, 18.0),
-    "oignon": (1.1, 9.3, 0.1, 40.0),
+    "chicken": (27.0, 0.0, 7.0, 165.0),
+    "rice": (2.7, 28.0, 0.3, 130.0),
+    "broccoli": (2.8, 7.0, 0.4, 35.0),
+    "pasta": (5.0, 25.0, 1.1, 131.0),
+    "eggs": (13.0, 1.1, 11.0, 155.0),
+    "tomatoes": (0.9, 3.9, 0.2, 18.0),
+    "onion": (1.1, 9.3, 0.1, 40.0),
 }
 _UNKNOWN_PER_100G = (5.0, 15.0, 5.0, 120.0)
 
 # What the mock "sees" on any photo.
 _PLATE: list[tuple[str, float, CookingState]] = [
-    ("poulet", 150.0, CookingState.GRILLED),
-    ("riz", 180.0, CookingState.BOILED),
-    ("brocoli", 100.0, CookingState.STEAMED),
+    ("chicken", 150.0, CookingState.GRILLED),
+    ("rice", 180.0, CookingState.BOILED),
+    ("broccoli", 100.0, CookingState.STEAMED),
 ]
 
 
@@ -113,15 +113,15 @@ class MockRecipeService:
         suffix = f" ({', '.join(request.dietary_constraints)})" if request.dietary_constraints else ""
         return RecipeResponse(
             recipe=Recipe(
-                title=f"Poêlée de {', '.join(request.ingredients[:3])}{suffix}",
+                title=f"Stir-fry of {', '.join(request.ingredients[:3])}{suffix}",
                 cook_time="20 min",
                 used_ingredients=list(request.ingredients),
                 steps=[
-                    f"Laver et couper les ingrédients : {names}.",
-                    "Faire chauffer un filet d'huile dans une poêle à feu moyen.",
-                    "Faire revenir les ingrédients pendant 10 minutes en remuant.",
-                    "Assaisonner de sel et de poivre, laisser mijoter 5 minutes.",
-                    "Servir chaud.",
+                    f"Wash and chop the ingredients: {names}.",
+                    "Heat a drizzle of oil in a pan over medium heat.",
+                    "Fry the ingredients for 10 minutes, stirring.",
+                    "Season with salt and pepper, simmer for 5 minutes.",
+                    "Serve hot.",
                 ],
                 emissions_kgco2eq=0.0000385,
             )
@@ -138,16 +138,16 @@ class MockChatService:
         time.sleep(self._delay)
         return ChatData(
             response=(
-                "Pour alléger la recette, vous pouvez remplacer le beurre par du fromage "
-                "blanc 0% ou du yaourt grec. Pour une sauce, un peu d'eau de cuisson liée "
-                "avec une touche de fromage frais fonctionne aussi très bien."
+                "To lighten the recipe, you can replace the butter with fat-free fromage "
+                "blanc or Greek yogurt. For a sauce, a little cooking water thickened "
+                "with a touch of cream cheese also works very well."
             ),
             sources=[
                 Source(
-                    title="Pâtes Carbonara Traditionnelles",
+                    title="Pasta Carbonara Traditionnelles",
                     url="https://www.marmiton.org/recettes/recette_pates-carbonara_12345.aspx",
                 ),
-                Source(title="Gratin de courgettes allégé"),
+                Source(title="Lighter Zucchini Gratin"),
             ],
             emissions_kgco2eq=0.0000215,
         )

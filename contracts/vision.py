@@ -37,7 +37,7 @@ class Macros(BaseModel):
 
 
 class DetectedIngredient(BaseModel):
-    name: str = Field(min_length=1, description="Ingredient name, lowercase French.")
+    name: str = Field(min_length=1, description="Ingredient name, lowercase English.")
     estimated_grams: float = Field(gt=0, description="Estimated or user-given weight.")
     cooking_state: CookingState = CookingState.UNKNOWN
     confidence: float | None = Field(default=None, ge=0, le=1)

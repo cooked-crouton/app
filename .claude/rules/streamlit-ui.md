@@ -14,5 +14,5 @@ paths:
 - Macros charts: pie (`protein_g`, `carbs_g`, `fat_g`), per portion and total; handle all-zero macros without crashing.
 - Show the sources of every chat answer under the message.
 - User-visible errors: `st.error` with a short message; no raw exceptions.
-- UI labels are English (current code); model-generated content stays French.
+- All text shown is English: UI labels and model-generated content.
 - Keep logic in pure helpers testable without Streamlit; optionally smoke-test with `streamlit.testing.v1.AppTest`.

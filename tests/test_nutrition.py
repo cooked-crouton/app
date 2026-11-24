@@ -15,7 +15,7 @@ def test_per_portion_keeps_unknown_calories_unknown():
 def test_ingredient_rows_match_the_analysis():
     analysis = MockVisionService().analyze_image(b"x")
     rows = ingredient_rows(analysis)
-    assert [r["Ingredient"] for r in rows] == ["Poulet", "Riz", "Brocoli"]
+    assert [r["Ingredient"] for r in rows] == ["Chicken", "Rice", "Broccoli"]
     assert sum(r["Proteins (g)"] for r in rows) == round(analysis.total_macros.protein_g, 1)
 
 
@@ -34,5 +34,5 @@ def test_macro_rows_are_empty_when_every_macro_is_zero():
 
 def test_recipe_ingredient_lines_add_grams_from_the_analysis():
     analysis = MockVisionService().analyze_image(b"x")
-    recipe = Recipe(title="t", used_ingredients=["poulet", "Riz", "sel"], steps=["s"])
-    assert recipe_ingredient_lines(recipe, analysis) == ["Poulet : 150 g", "Riz : 180 g", "Sel"]
+    recipe = Recipe(title="t", used_ingredients=["chicken", "Rice", "salt"], steps=["s"])
+    assert recipe_ingredient_lines(recipe, analysis) == ["Chicken : 150 g", "Rice : 180 g", "Salt"]

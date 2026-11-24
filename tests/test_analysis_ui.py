@@ -51,7 +51,7 @@ def test_analyze_shows_ingredients_with_state_and_grams(monkeypatch):
     at = _settle(_click(_uploaded(), "Analyze image"))
     assert not at.exception
     analysis = at.session_state["analysis"]
-    assert [i.name for i in analysis.ingredients] == ["poulet", "riz", "brocoli"]
+    assert [i.name for i in analysis.ingredients] == ["chicken", "rice", "broccoli"]
     assert [i.cooking_state.value for i in analysis.ingredients] == ["grilled", "boiled", "steamed"]
     assert [i.estimated_grams for i in analysis.ingredients] == [150, 180, 100]
     assert at.session_state["analysis"].portions == 1
@@ -145,8 +145,8 @@ def test_editing_the_table_recomputes_the_nutrition(monkeypatch):
         if edited:  # a real editor only reports a user edit once
             return df
         edited.append(True)
-        df.loc[0, "Weight (g)"] = 300  # poulet 150 -> 300
-        df.loc[len(df)] = ["Pâtes", "boiled", None]  # added row, weight left to estimate
+        df.loc[0, "Weight (g)"] = 300  # chicken 150 -> 300
+        df.loc[len(df)] = ["Pasta", "boiled", None]  # added row, weight left to estimate
         return df
 
     at = _settle(_click(_uploaded(), "Analyze image"))
@@ -154,7 +154,7 @@ def test_editing_the_table_recomputes_the_nutrition(monkeypatch):
     monkeypatch.setattr(panel.st, "data_editor", edit)
     at = at.run()
     analysis = at.session_state["analysis"]
-    assert [i.name for i in analysis.ingredients] == ["poulet", "riz", "brocoli", "pâtes"]
+    assert [i.name for i in analysis.ingredients] == ["chicken", "rice", "broccoli", "pasta"]
     assert analysis.ingredients[0].estimated_grams == 300
     assert analysis.ingredients[3].estimated_grams > 0
     assert analysis.total_macros.protein_g > old_protein

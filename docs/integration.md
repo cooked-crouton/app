@@ -84,9 +84,11 @@ Errors: assumed non-2xx with `ErrorResponse` (`{"detail": "..."}`, the FastAPI d
 - Recipe generation ("frigo vide"): the recipe may only use the given ingredients, plus a
   fixed list of pantry basics (salt, pepper, water, oil). Enforced in Rag_llm's prompt.
   Build the request from an analysis with `RecipeRequest.from_analysis`.
-- Language (agreed with Rag_llm): all generated text (recipe, answers) is **French**.
-  Ingredient names exchanged between modules are therefore **French** too (this also
-  matches Ciqual). Field names stay English snake_case.
+- Language: everything is **English**, so the page is not half French. All generated text
+  (recipe, answers) and the ingredient names exchanged between modules are English; field
+  names stay English snake_case. **To verify / to agree with the owners**: Rag_llm was
+  first agreed to generate French, and Ciqual names are French, so vision_engine needs
+  an English name mapping and Rag_llm an English prompt and recipe data.
 - Conversation history: **stateless server**. The app keeps the chat persistent and sends
   the full prior turns (oldest first, excluding the new `message`) on every `/chat` call.
 - Sources: **every chat answer must be sourced** (`ChatData.sources` has at least one

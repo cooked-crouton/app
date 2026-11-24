@@ -63,9 +63,9 @@ def test_generate_shows_title_ingredients_and_numbered_steps():
     at = _generate(_dashboard(analysis))
     assert not at.exception
     recipe = at.session_state["recipe"]
-    assert recipe.title.startswith("Poêlée de poulet")
+    assert recipe.title.startswith("Stir-fry of chicken")
     texts = [m.value for m in at.tabs[1].markdown]
-    assert "- Poulet : 150 g\n- Riz : 180 g\n- Brocoli : 100 g" in texts
+    assert "- Chicken : 150 g\n- Rice : 180 g\n- Broccoli : 100 g" in texts
     assert [f"{n}. {s}" for n, s in enumerate(recipe.steps, start=1)] == [
         t for t in texts if t[:2] in {f"{n}." for n in range(1, 10)}
     ]
@@ -76,7 +76,7 @@ def test_recipe_survives_a_rerun():
     analysis = MockVisionService().analyze_image(b"x")
     at = _generate(_dashboard(analysis)).run()
     assert not at.exception
-    assert any(s.value.startswith("Poêlée") for s in at.tabs[1].subheader)
+    assert any(s.value.startswith("Stir-fry") for s in at.tabs[1].subheader)
 
 
 def test_generation_failure_shows_a_message_not_a_traceback(monkeypatch):

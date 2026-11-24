@@ -25,9 +25,9 @@ def _assert_consistent(a: NutritionAnalysis) -> None:
     assert a.macros_per_portion.carbs_g == pytest.approx(a.total_macros.carbs_g / a.portions, abs=0.1)
 
 
-def test_vision_image_returns_fixed_french_plate():
+def test_vision_image_returns_fixed_plate():
     a = MockVisionService().analyze_image(b"fake-jpeg", portions=2)
-    assert [i.name for i in a.ingredients] == ["poulet", "riz", "brocoli"]
+    assert [i.name for i in a.ingredients] == ["chicken", "rice", "broccoli"]
     assert a.portions == 2
     _assert_consistent(a)
 
@@ -40,8 +40,8 @@ def test_vision_rejects_empty_image():
 def test_vision_ingredients_keeps_given_grams_and_defaults():
     req = AnalyzeIngredientsRequest(
         ingredients=[
-            IngredientInput(name="œufs", grams=120, cooking_state=CookingState.FRIED),
-            IngredientInput(name="ingrédient inconnu"),
+            IngredientInput(name="eggs", grams=120, cooking_state=CookingState.FRIED),
+            IngredientInput(name="unknown ingredient"),
         ]
     )
     a = MockVisionService().analyze_ingredients(req)
@@ -51,10 +51,10 @@ def test_vision_ingredients_keeps_given_grams_and_defaults():
 
 
 def test_recipe_uses_only_given_ingredients():
-    req = RecipeRequest(ingredients=["œufs", "tomates"], dietary_constraints=["végétarien"])
+    req = RecipeRequest(ingredients=["eggs", "tomatoes"], dietary_constraints=["vegetarian"])
     resp = MockRecipeService().generate(req)
-    assert resp.recipe.used_ingredients == ["œufs", "tomates"]
-    assert "végétarien" in resp.recipe.title and resp.recipe.steps
+    assert resp.recipe.used_ingredients == ["eggs", "tomatoes"]
+    assert "vegetarian" in resp.recipe.title and resp.recipe.steps
 
 
 def test_chat_answer_is_sourced():
