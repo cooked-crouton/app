@@ -2,7 +2,7 @@
 
 Mirrors the HTTP API documented in the Rag_llm README (`POST /api/v1/generate` and
 `POST /api/v1/chat`). The service is stateless: the app sends the whole conversation
-history on each chat call. All text is French.
+history on each chat call. All text is English.
 """
 
 from enum import Enum

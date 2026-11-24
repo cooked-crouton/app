@@ -20,7 +20,7 @@ MACROS = Macros(calories_kcal=100, protein_g=5, carbs_g=10, fat_g=2)
 
 def _analysis() -> NutritionAnalysis:
     ing = DetectedIngredient(
-        name="riz", estimated_grams=150, cooking_state=CookingState.BOILED, macros=MACROS
+        name="rice", estimated_grams=150, cooking_state=CookingState.BOILED, macros=MACROS
     )
     return NutritionAnalysis(
         ingredients=[ing], total_macros=MACROS, portions=2, macros_per_portion=MACROS
@@ -64,11 +64,11 @@ def test_ingredient_only_request():
 
 def test_recipe_request_matches_rag_llm_example():
     req = RecipeRequest.model_validate(
-        {"ingredients": ["œufs", "tomates", "oignon"], "dietary_constraints": ["végétarien"]}
+        {"ingredients": ["eggs", "tomatoes", "onion"], "dietary_constraints": ["vegetarian"]}
     )
     assert req.model_dump() == {
-        "ingredients": ["œufs", "tomates", "oignon"],
-        "dietary_constraints": ["végétarien"],
+        "ingredients": ["eggs", "tomatoes", "onion"],
+        "dietary_constraints": ["vegetarian"],
     }
     with pytest.raises(ValidationError):
         RecipeRequest(ingredients=[])
@@ -77,8 +77,8 @@ def test_recipe_request_matches_rag_llm_example():
 def test_recipe_request_from_analysis_dedupes_names():
     analysis = _analysis()
     analysis.ingredients.append(analysis.ingredients[0])
-    req = RecipeRequest.from_analysis(analysis, ["végétarien"])
-    assert req.ingredients == ["riz"] and req.dietary_constraints == ["végétarien"]
+    req = RecipeRequest.from_analysis(analysis, ["vegetarian"])
+    assert req.ingredients == ["rice"] and req.dietary_constraints == ["vegetarian"]
 
 
 def test_recipe_response_matches_rag_llm_example():
@@ -86,15 +86,15 @@ def test_recipe_response_matches_rag_llm_example():
         {
             "status": "success",
             "recipe": {
-                "title": "Poêlée de tomates aux œufs et oignons",
+                "title": "Tomato and egg stir-fry",
                 "cook_time": "15 min",
-                "used_ingredients": ["œufs", "tomates", "oignon"],
-                "steps": ["Émincer l'oignon."],
+                "used_ingredients": ["eggs", "tomatoes", "onion"],
+                "steps": ["Émincer l'onion."],
                 "emissions_kgco2eq": 0.00003851635342786505,
             },
         }
     )
-    assert resp.recipe.used_ingredients[0] == "œufs"
+    assert resp.recipe.used_ingredients[0] == "eggs"
 
 
 def test_chat_request_defaults_and_validation():
