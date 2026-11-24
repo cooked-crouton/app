@@ -24,6 +24,19 @@ def macro_rows(macros: Macros) -> list[dict]:
     return rows if any(r["Grams"] > 0 for r in rows) else []
 
 
+def ingredient_macro_rows(analysis: NutritionAnalysis) -> list[dict]:
+    """One row per ingredient and macro (grams), the long format the bar chart needs."""
+    return [
+        {"Ingredient": i.name.capitalize(), "Macro": macro, "Grams": grams}
+        for i in analysis.ingredients
+        for macro, grams in (
+            ("Proteins", i.macros.protein_g),
+            ("Carbs", i.macros.carbs_g),
+            ("Fats", i.macros.fat_g),
+        )
+    ]
+
+
 def ingredient_rows(analysis: NutritionAnalysis) -> list[dict]:
     """What each ingredient brings (for its whole weight), for the contribution table."""
     return [
