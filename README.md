@@ -4,12 +4,30 @@ Local Streamlit app (Ollama-powered). 100% local.
 
 ## Run
 
+Requires Python 3 (tested with 3.14). In mock mode (the default) nothing else is needed:
+no Ollama, no Docker.
+
+Linux / macOS:
+
 ```
-python -m venv .venv && .venv\Scripts\activate
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt   # add requirements-dev.txt for tests (then: pytest)
+cp .env.example .env
+streamlit run app.py
+```
+
+Windows (PowerShell):
+
+```
+python -m venv .venv
+.venv\Scripts\Activate.ps1
 pip install -r requirements.txt   # add requirements-dev.txt for tests (then: pytest)
 copy .env.example .env
 streamlit run app.py
 ```
+
+The app opens at http://localhost:8501.
 
 ## Mock mode
 
