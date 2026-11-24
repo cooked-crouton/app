@@ -1,6 +1,6 @@
-from contracts import Macros
+from contracts import Macros, Recipe
 from services.mocks import MockVisionService
-from utils.nutrition import ingredient_rows, macro_rows, per_portion
+from utils.nutrition import ingredient_rows, macro_rows, per_portion, recipe_ingredient_lines
 
 
 def test_per_portion_divides_every_value():
@@ -30,3 +30,9 @@ def test_macro_rows_list_the_three_macros_in_grams():
 
 def test_macro_rows_are_empty_when_every_macro_is_zero():
     assert macro_rows(Macros(protein_g=0, carbs_g=0, fat_g=0)) == []
+
+
+def test_recipe_ingredient_lines_add_grams_from_the_analysis():
+    analysis = MockVisionService().analyze_image(b"x")
+    recipe = Recipe(title="t", used_ingredients=["poulet", "Riz", "sel"], steps=["s"])
+    assert recipe_ingredient_lines(recipe, analysis) == ["Poulet : 150 g", "Riz : 180 g", "Sel"]

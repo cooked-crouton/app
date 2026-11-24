@@ -52,3 +52,45 @@ def test_all_zero_macros_do_not_crash():
     at = _dashboard(analysis)
     assert not at.exception
     assert any("all values are 0" in i.value for i in at.tabs[1].info)
+
+
+def _generate(at: AppTest) -> AppTest:
+    return next(b for b in at.tabs[1].button if b.label == "Generate recipe").click().run()
+
+
+def test_generate_shows_title_ingredients_and_numbered_steps():
+    analysis = MockVisionService().analyze_image(b"x")
+    at = _generate(_dashboard(analysis))
+    assert not at.exception
+    recipe = at.session_state["recipe"]
+    assert recipe.title.startswith("Poêlée de poulet")
+    texts = [m.value for m in at.tabs[1].markdown]
+    assert "- Poulet : 150 g\n- Riz : 180 g\n- Brocoli : 100 g" in texts
+    assert [f"{n}. {s}" for n, s in enumerate(recipe.steps, start=1)] == [
+        t for t in texts if t[:2] in {f"{n}." for n in range(1, 10)}
+    ]
+    assert any(b.label == "Regenerate recipe" for b in at.tabs[1].button)
+
+
+def test_recipe_survives_a_rerun():
+    analysis = MockVisionService().analyze_image(b"x")
+    at = _generate(_dashboard(analysis)).run()
+    assert not at.exception
+    assert any(s.value.startswith("Poêlée") for s in at.tabs[1].subheader)
+
+
+def test_generation_failure_shows_a_message_not_a_traceback(monkeypatch):
+    import ui.recipe_dashboard as panel
+    from services.factory import Services
+    from services.mocks import MockChatService, MockRecipeService
+
+    class Broken(MockRecipeService):
+        def generate(self, request):
+            raise ConnectionError("refused")
+
+    services = Services(vision=MockVisionService(), recipe=Broken(), chat=MockChatService())
+    monkeypatch.setattr(panel, "get_services", lambda _settings: services)
+    at = _generate(_dashboard(MockVisionService().analyze_image(b"x")))
+    assert not at.exception
+    assert any("could not be generated" in e.value for e in at.error)
+    assert "recipe" not in at.session_state
