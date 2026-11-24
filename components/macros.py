@@ -4,7 +4,7 @@ import altair as alt
 import streamlit as st
 
 from contracts import Macros, NutritionAnalysis
-from utils.nutrition import macro_rows
+from utils.nutrition import ingredient_macro_rows, macro_rows
 
 
 def selected_portions(analysis: NutritionAnalysis) -> int:
@@ -35,5 +35,25 @@ def render_macros_pie(macros: Macros) -> None:
             color=alt.Color("Macro:N", sort=["Proteins", "Carbs", "Fats"]),
             tooltip=["Macro:N", alt.Tooltip("Grams:Q", format=".1f")],
         )
+    )
+    st.altair_chart(chart, width="stretch")
+
+
+_BAR_HEIGHT_PX = 36  # per ingredient, so the chart never needs an inner scrollbar
+
+
+def render_ingredient_bars(analysis: NutritionAnalysis) -> None:
+    """Static horizontal stacked bars: grams of each macro brought by each ingredient."""
+    rows = ingredient_macro_rows(analysis)
+    chart = (
+        alt.Chart(alt.Data(values=rows))
+        .mark_bar()
+        .encode(
+            y=alt.Y("Ingredient:N", sort=None, title=None),
+            x=alt.X("Grams:Q", title="Grams"),
+            color=alt.Color("Macro:N", sort=["Proteins", "Carbs", "Fats"]),
+            tooltip=["Ingredient:N", "Macro:N", alt.Tooltip("Grams:Q", format=".1f")],
+        )
+        .properties(height=_BAR_HEIGHT_PX * len(analysis.ingredients) + 50)
     )
     st.altair_chart(chart, width="stretch")
