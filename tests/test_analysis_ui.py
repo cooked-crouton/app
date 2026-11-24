@@ -164,13 +164,14 @@ def test_nutrition_summary_follows_the_portion_selector(monkeypatch):
     _use_vision(monkeypatch, MockVisionService())
     at = _settle(_click(_uploaded(), "Analyze image"))
     total = at.session_state["analysis"].total_macros
-    values = {m.label: m.value for m in at.metric}
-    assert len(at.metric) == 8  # 4 per portion + 4 whole dish
+    metrics = lambda: at.tabs[0].metric  # noqa: E731 - the dashboard tab has its own
+    values = {m.label: m.value for m in metrics()}
+    assert len(metrics()) == 8  # 4 per portion + 4 whole dish
     assert values["Proteins"] == f"{total.protein_g:.1f} g"
-    before = [m.value for m in at.metric]
+    before = [m.value for m in metrics()]
     first = before[:4]
     at.number_input(key="portions").set_value(2).run()
-    after = [m.value for m in at.metric]
+    after = [m.value for m in metrics()]
     assert after[4:] == before[4:]  # whole-dish totals do not change
     half = after[:4]
     assert half != first

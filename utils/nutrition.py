@@ -14,6 +14,16 @@ def per_portion(total: Macros, portions: int) -> Macros:
     )
 
 
+def macro_rows(macros: Macros) -> list[dict]:
+    """One row per macro for the pie chart; empty when every macro is 0 (nothing to draw)."""
+    rows = [
+        {"Macro": "Proteins", "Grams": macros.protein_g},
+        {"Macro": "Carbs", "Grams": macros.carbs_g},
+        {"Macro": "Fats", "Grams": macros.fat_g},
+    ]
+    return rows if any(r["Grams"] > 0 for r in rows) else []
+
+
 def ingredient_rows(analysis: NutritionAnalysis) -> list[dict]:
     """What each ingredient brings (for its whole weight), for the contribution table."""
     return [

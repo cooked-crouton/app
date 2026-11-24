@@ -30,10 +30,16 @@ row): the nutrition is recomputed after every edit. A nutrition summary shows ca
 portion selector only changes the division), with the contribution of each ingredient.
 Failures (Ollama down, model missing, timeout) show what to do next.
 
+## Nutrition dashboard
+
+The "Recipe & Dashboard" tab shows the macros of the current analysis, per portion or for
+the whole dish: metric cards, a donut of proteins / carbs / fats (grams) and a bar chart of
+each ingredient's contribution. It follows every edit of the ingredient list.
+
 ## Layout
 
 - `app.py` entry point; `config.py` settings from `.env`
 - `ui/` sidebar + the 3 areas (Upload & Analysis, Recipe & Dashboard, Chat)
 - `contracts/` shared schemas; `services/` service interfaces, mocks and factory
-- `components/` reusable widgets (image upload); `utils/` helpers (image processing, streaming)
+- `components/` reusable widgets (image upload, macros charts); `utils/` helpers (image processing, streaming)
 - `assets/` static files
